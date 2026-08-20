@@ -16,10 +16,42 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis_cli", "ping"]
+      interval: 10s
+      timeout: 3s 
+      retries: 5
 
   app:
     image: nextcloud:34-frm-alpine
     restart: unless-stopped
+    volumes:
+      - nextcloud:/var/www/html:z
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - db.env
+    environment:
+      - POSTGRES_HOST=db
+      - REDIS_HOST=redis
+  cron:
+    image: nextcloud:34-frm-alpine
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+    - nextcloud:/var/www/html:Z
+
+volumes:
+  db:
+  nextcloud:
+
+
+      
 
   
 
