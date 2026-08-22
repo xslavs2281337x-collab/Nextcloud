@@ -6,23 +6,7 @@ Self-hosted файловое хранилище. Docker Compose, PHP-FPM за ng
 
 ---
 
-## Текущее состояние
 
-> **TLS не настроен. Реверс-прокси нет.**
->
-> Доступ идёт напрямую к контейнеру `web` по HTTP:
-> ```
-> http://172.20.14.2:8080
-> ```
-> **Что отложено до появления прокси:**
-> - hostовый nginx на :443 с сертификатом
-> - `fastcgi_param HTTPS on` в `web/nginx.conf` (сейчас закомментирован — верно)
-> - `overwriteprotocol`, `overwrite.cli.url`, `trusted_proxies` в config.php
-> - редирект с :80 на :443
->
-> Порядок: сначала убедиться, что стек работает по HTTP, потом накручивать TLS.
-
----
 
 ## Расположение
 
@@ -43,11 +27,9 @@ Self-hosted файловое хранилище. Docker Compose, PHP-FPM за ng
 Целевая схема:
 
 ```
-клиент ──HTTPS/443──> nginx (хост)          <-- ПОКА НЕ НАСТРОЕН
-                        │
-                        └──> 127.0.0.1:8080 <-- ПОКА НЕ НАСТРОЕН
-                               │
-                             web (nginx в контейнере)
+клиент ──HTTPS/443──>─────          
+                          │     
+                          └──> web (nginx в контейнере)
                                │ FastCGI
                              app (php-fpm)
                                ├──> db     PostgreSQL
@@ -59,7 +41,7 @@ Self-hosted файловое хранилище. Docker Compose, PHP-FPM за ng
 Сейчас:
 
 ```
-клиент ──HTTP──> 127.0.0.1:8080 ──> web ──> app ──> db / redis
+клиент ──HTTPS──> https://cloud.loesk.ru ──> web ──> app ──> db / redis
 ```
 
 Два nginx с разными ролями: контейнерный `web` разговаривает с PHP-FPM, хостовый — только проксирует и держит TLS.
